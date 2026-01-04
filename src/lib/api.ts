@@ -159,10 +159,16 @@ export const tenants = {
 
 // ==================== CATEGORIES ====================
 
+// Хелпер для обработки пагинированных ответов
+function extractResults<T>(data: T[] | { results: T[] }): T[] {
+  return Array.isArray(data) ? data : (data.results || []);
+}
+
 export const categories = {
   async list() {
     const response = await fetchWithAuth("/categories/");
-    return response.json();
+    const data = await response.json();
+    return extractResults(data);
   },
 
   async get(id: number) {
@@ -201,7 +207,8 @@ export const assets = {
 
     const query = searchParams.toString();
     const response = await fetchWithAuth(`/assets/${query ? `?${query}` : ""}`);
-    return response.json();
+    const data = await response.json();
+    return extractResults(data);
   },
 
   async get(id: number) {
@@ -247,7 +254,8 @@ export const sessions = {
 
     const query = searchParams.toString();
     const response = await fetchWithAuth(`/sessions/${query ? `?${query}` : ""}`);
-    return response.json();
+    const data = await response.json();
+    return extractResults(data);
   },
 
   async start(assetId: number, plannedDuration?: number, metadata?: Record<string, unknown>) {

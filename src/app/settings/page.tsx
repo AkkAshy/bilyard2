@@ -26,6 +26,7 @@ export default function SettingsPage() {
     category: "",
     sort_order: "0",
     is_active: true,
+    hourly_rate: "",
   });
 
   // Форма для категории
@@ -71,6 +72,7 @@ export default function SettingsPage() {
         category: String(asset.category),
         sort_order: String(asset.sort_order),
         is_active: asset.is_active,
+        hourly_rate: asset.hourly_rate ? String(asset.hourly_rate) : "",
       });
     } else {
       setEditingItem(null);
@@ -80,6 +82,7 @@ export default function SettingsPage() {
         category: categoriesList[0]?.id ? String(categoriesList[0].id) : "",
         sort_order: "0",
         is_active: true,
+        hourly_rate: "",
       });
     }
     setIsModalOpen(true);
@@ -125,6 +128,7 @@ export default function SettingsPage() {
         category: parseInt(assetForm.category),
         sort_order: parseInt(assetForm.sort_order),
         is_active: assetForm.is_active,
+        hourly_rate: assetForm.hourly_rate ? parseInt(assetForm.hourly_rate) : null,
       };
 
       if (editingItem) {
@@ -393,6 +397,18 @@ export default function SettingsPage() {
                     className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
                     placeholder="Описание объекта"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Цена за час (сум)</label>
+                  <input
+                    type="number"
+                    value={assetForm.hourly_rate}
+                    onChange={(e) => setAssetForm({ ...assetForm, hourly_rate: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                    placeholder="Например: 50000"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Оставьте пустым для использования цены по умолчанию</p>
                 </div>
 
                 <div className="flex items-center gap-3 pt-2">

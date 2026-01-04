@@ -20,32 +20,7 @@
     "afterFiles": [],
     "fallback": []
   },
-  "dynamicRoutes": [
-    {
-      "page": "/api/auth/[...nextauth]",
-      "regex": "^/api/auth/(.+?)(?:/)?$",
-      "routeKeys": {
-        "nxtPnextauth": "nxtPnextauth"
-      },
-      "namedRegex": "^/api/auth/(?<nxtPnextauth>.+?)(?:/)?$"
-    },
-    {
-      "page": "/api/sessions/[id]",
-      "regex": "^/api/sessions/([^/]+?)(?:/)?$",
-      "routeKeys": {
-        "nxtPid": "nxtPid"
-      },
-      "namedRegex": "^/api/sessions/(?<nxtPid>[^/]+?)(?:/)?$"
-    },
-    {
-      "page": "/api/tables/[id]",
-      "regex": "^/api/tables/([^/]+?)(?:/)?$",
-      "routeKeys": {
-        "nxtPid": "nxtPid"
-      },
-      "namedRegex": "^/api/tables/(?<nxtPid>[^/]+?)(?:/)?$"
-    }
-  ],
+  "dynamicRoutes": [],
   "staticRoutes": [
     {
       "page": "/",
@@ -64,24 +39,6 @@
       "regex": "^/_not\\-found(?:/)?$",
       "routeKeys": {},
       "namedRegex": "^/_not\\-found(?:/)?$"
-    },
-    {
-      "page": "/api/esp/status",
-      "regex": "^/api/esp/status(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/api/esp/status(?:/)?$"
-    },
-    {
-      "page": "/api/sessions",
-      "regex": "^/api/sessions(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/api/sessions(?:/)?$"
-    },
-    {
-      "page": "/api/tables",
-      "regex": "^/api/tables(?:/)?$",
-      "routeKeys": {},
-      "namedRegex": "^/api/tables(?:/)?$"
     },
     {
       "page": "/dashboard",
@@ -108,10 +65,16 @@
       "namedRegex": "^/login(?:/)?$"
     },
     {
-      "page": "/tables",
-      "regex": "^/tables(?:/)?$",
+      "page": "/reports",
+      "regex": "^/reports(?:/)?$",
       "routeKeys": {},
-      "namedRegex": "^/tables(?:/)?$"
+      "namedRegex": "^/reports(?:/)?$"
+    },
+    {
+      "page": "/settings",
+      "regex": "^/settings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/settings(?:/)?$"
     }
   ],
   "dataRoutes": [],

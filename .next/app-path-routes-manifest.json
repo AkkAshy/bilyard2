@@ -1,16 +1,11 @@
 {
   "/_global-error/page": "/_global-error",
   "/_not-found/page": "/_not-found",
-  "/api/auth/[...nextauth]/route": "/api/auth/[...nextauth]",
-  "/api/esp/status/route": "/api/esp/status",
-  "/api/sessions/[id]/route": "/api/sessions/[id]",
-  "/api/sessions/route": "/api/sessions",
-  "/api/tables/[id]/route": "/api/tables/[id]",
-  "/api/tables/route": "/api/tables",
   "/dashboard/page": "/dashboard",
   "/favicon.ico/route": "/favicon.ico",
   "/history/page": "/history",
   "/login/page": "/login",
   "/page": "/",
-  "/tables/page": "/tables"
+  "/reports/page": "/reports",
+  "/settings/page": "/settings"
 }

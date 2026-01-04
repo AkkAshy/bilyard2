@@ -140,7 +140,7 @@ self.__SERVER_FILES_MANIFEST={
       "isExperimentalCompile": false
     }
   },
-  "appDir": "/Users/akkanat/Projects/byiyard",
+  "appDir": "/Users/akkanat/Projects/byiyard/frontend",
   "relativeAppDir": "",
   "files": [
     ".next/routes-manifest.json",

@@ -1,16 +1,11 @@
 {
   "/_global-error/page": "app/_global-error/page.js",
   "/_not-found/page": "app/_not-found/page.js",
-  "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/api/esp/status/route": "app/api/esp/status/route.js",
-  "/api/sessions/[id]/route": "app/api/sessions/[id]/route.js",
-  "/api/sessions/route": "app/api/sessions/route.js",
-  "/api/tables/[id]/route": "app/api/tables/[id]/route.js",
-  "/api/tables/route": "app/api/tables/route.js",
   "/dashboard/page": "app/dashboard/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/history/page": "app/history/page.js",
   "/login/page": "app/login/page.js",
   "/page": "app/page.js",
-  "/tables/page": "app/tables/page.js"
+  "/reports/page": "app/reports/page.js",
+  "/settings/page": "app/settings/page.js"
 }

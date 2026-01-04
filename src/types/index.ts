@@ -108,6 +108,7 @@ export interface Asset {
   description: string;
   sort_order: number;
   is_active: boolean;
+  hourly_rate: number | null;
   custom_fields: Record<string, unknown>;
   is_occupied: boolean;
   iot_devices: AssetIotDevice[];

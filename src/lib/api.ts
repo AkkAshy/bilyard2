@@ -2,6 +2,8 @@
  * API клиент для Django backend
  */
 
+import type { Category, Asset, AssetWithSession, RentalSession } from "@/types";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 // Токены хранятся в localStorage
@@ -165,10 +167,10 @@ function extractResults<T>(data: T[] | { results: T[] }): T[] {
 }
 
 export const categories = {
-  async list() {
+  async list(): Promise<Category[]> {
     const response = await fetchWithAuth("/categories/");
     const data = await response.json();
-    return extractResults(data);
+    return extractResults<Category>(data);
   },
 
   async get(id: number) {
@@ -200,7 +202,7 @@ export const categories = {
 // ==================== ASSETS ====================
 
 export const assets = {
-  async list(params?: { category?: number; active?: boolean }) {
+  async list(params?: { category?: number; active?: boolean }): Promise<AssetWithSession[]> {
     const searchParams = new URLSearchParams();
     if (params?.category) searchParams.set("category", String(params.category));
     if (params?.active !== undefined) searchParams.set("active", String(params.active));
@@ -208,7 +210,7 @@ export const assets = {
     const query = searchParams.toString();
     const response = await fetchWithAuth(`/assets/${query ? `?${query}` : ""}`);
     const data = await response.json();
-    return extractResults(data);
+    return extractResults<AssetWithSession>(data);
   },
 
   async get(id: number) {
@@ -245,7 +247,7 @@ export const assets = {
 // ==================== SESSIONS ====================
 
 export const sessions = {
-  async list(params?: { asset?: number; status?: string; from?: string; to?: string }) {
+  async list(params?: { asset?: number; status?: string; from?: string; to?: string }): Promise<RentalSession[]> {
     const searchParams = new URLSearchParams();
     if (params?.asset) searchParams.set("asset", String(params.asset));
     if (params?.status) searchParams.set("status", params.status);
@@ -255,7 +257,7 @@ export const sessions = {
     const query = searchParams.toString();
     const response = await fetchWithAuth(`/sessions/${query ? `?${query}` : ""}`);
     const data = await response.json();
-    return extractResults(data);
+    return extractResults<RentalSession>(data);
   },
 
   async start(assetId: number, plannedDuration?: number, metadata?: Record<string, unknown>) {

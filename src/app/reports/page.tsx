@@ -57,20 +57,45 @@ export default function ReportsPage() {
   }, [fromDate, toDate, groupBy, router]);
 
   // Экспорт
-  const handleExport = (format: "xlsx" | "pdf") => {
-    const url = reports.getExportUrl(format, { from: fromDate, to: toDate });
-    // Добавляем токен в URL для авторизации
+  const handleExport = async (format: "xlsx" | "pdf") => {
     const token = localStorage.getItem("access_token");
     const tenantId = localStorage.getItem("tenant_id");
 
-    // Открываем в новом окне с заголовками (через форму)
-    const form = document.createElement("form");
-    form.method = "GET";
-    form.action = url;
-    form.target = "_blank";
+    if (!token || !tenantId) {
+      alert("Не авторизован");
+      return;
+    }
 
-    // Для простоты просто откроем URL - в реальном проекте нужно добавить токен
-    window.open(`${url}&token=${token}&tenant=${tenantId}`, "_blank");
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+      const url = `${API_URL}/reports/export/?format=${format}&from=${fromDate}&to=${toDate}`;
+
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "X-Tenant-ID": tenantId,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Ошибка экспорта");
+      }
+
+      // Скачиваем файл
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = downloadUrl;
+      a.download = `report_${new Date().toISOString().split("T")[0]}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error("Export error:", error);
+      alert("Ошибка при экспорте отчёта");
+    }
   };
 
   // Максимальное значение для графика

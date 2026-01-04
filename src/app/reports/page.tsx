@@ -68,7 +68,7 @@ export default function ReportsPage() {
 
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-      const url = `${API_URL}/reports/export/?format=${format}&from=${fromDate}&to=${toDate}`;
+      const url = `${API_URL}/reports/export/?file_format=${format}&from=${fromDate}&to=${toDate}`;
 
       const response = await fetch(url, {
         method: "GET",

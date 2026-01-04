@@ -21,8 +21,9 @@ export default function DashboardPage() {
         assets.list({ category: selectedCategory || undefined }),
         categoriesApi.list()
       ]);
-      setAssetsList(assetsData);
-      setCategoriesList(categoriesData);
+      // Защита от не-массива (на случай ошибки API)
+      setAssetsList(Array.isArray(assetsData) ? assetsData : []);
+      setCategoriesList(Array.isArray(categoriesData) ? categoriesData : []);
     } catch (error) {
       console.error("Error fetching data:", error);
       // Если ошибка авторизации - редирект на логин

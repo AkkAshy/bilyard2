@@ -7,7 +7,7 @@ interface StartGameModalProps {
   categoryName: string;
   isOpen: boolean;
   onClose: () => void;
-  onStart: (duration: number | null) => void;
+  onStart: (duration: number | null, fixedPrice?: number) => void;
 }
 
 const presetTimes = [
@@ -27,6 +27,7 @@ export default function StartGameModal({
   const [mode, setMode] = useState<"free" | "timed">("free");
   const [customMinutes, setCustomMinutes] = useState("");
   const [selectedPreset, setSelectedPreset] = useState<number | null>(null);
+  const [fixedPrice, setFixedPrice] = useState("");
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
@@ -35,7 +36,9 @@ export default function StartGameModal({
     setLoading(true);
     try {
       if (mode === "free") {
-        await onStart(null);
+        // Безлимит с фиксированной ценой
+        const price = fixedPrice ? parseInt(fixedPrice) : undefined;
+        await onStart(null, price);
       } else {
         const duration = selectedPreset || parseInt(customMinutes) || 60;
         await onStart(duration);
@@ -49,6 +52,7 @@ export default function StartGameModal({
     setMode("free");
     setCustomMinutes("");
     setSelectedPreset(null);
+    setFixedPrice("");
     onClose();
   };
 
@@ -187,20 +191,43 @@ export default function StartGameModal({
             </div>
           )}
 
-          {/* Free Mode Info */}
+          {/* Free Mode - Fixed Price Input */}
           {mode === "free" && (
-            <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-300 font-medium">Оплата по факту</p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Стоимость рассчитывается автоматически при завершении
-                  </p>
+            <div className="space-y-4">
+              <div className="relative">
+                <label className="block text-sm text-gray-400 mb-2">
+                  Фиксированная цена (опционально)
+                </label>
+                <input
+                  type="number"
+                  placeholder="Например: 50000"
+                  value={fixedPrice}
+                  onChange={(e) => setFixedPrice(e.target.value)}
+                  className="w-full px-4 py-3.5 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50"
+                />
+                <span className="absolute right-4 top-[calc(50%+12px)] -translate-y-1/2 text-gray-500">
+                  сум
+                </span>
+              </div>
+
+              <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700/50">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-300 font-medium">
+                      {fixedPrice ? "Фиксированная цена" : "Оплата по факту"}
+                    </p>
+                    <p className="text-sm text-gray-500 mt-1">
+                      {fixedPrice
+                        ? `Стоимость: ${parseInt(fixedPrice).toLocaleString("ru-RU")} сум`
+                        : "Стоимость рассчитывается автоматически при завершении"
+                      }
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

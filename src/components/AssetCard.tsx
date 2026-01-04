@@ -62,9 +62,9 @@ export default function AssetCard({ asset, onRefresh }: AssetCardProps) {
   }, [isActive, activeSession]);
 
   // Запуск сессии
-  const handleStart = async (duration: number | null) => {
+  const handleStart = async (duration: number | null, fixedPrice?: number) => {
     try {
-      await sessions.start(asset.id, duration || undefined);
+      await sessions.start(asset.id, duration || undefined, fixedPrice);
       setIsModalOpen(false);
       onRefresh();
     } catch (error) {

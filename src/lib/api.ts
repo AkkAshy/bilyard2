@@ -260,13 +260,13 @@ export const sessions = {
     return extractResults<RentalSession>(data);
   },
 
-  async start(assetId: number, plannedDuration?: number, metadata?: Record<string, unknown>) {
+  async start(assetId: number, plannedDuration?: number, fixedPrice?: number) {
     const response = await fetchWithAuth("/sessions/start/", {
       method: "POST",
       body: JSON.stringify({
         asset_id: assetId,
         planned_duration: plannedDuration,
-        metadata: metadata || {},
+        fixed_price: fixedPrice,
       }),
     });
 

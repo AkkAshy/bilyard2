@@ -278,10 +278,13 @@ export const sessions = {
     return response.json();
   },
 
-  async stop(id: string, promotionCode?: string) {
+  async stop(id: string, paymentType: "cash" | "card" | "transfer", promotionCode?: string) {
     const response = await fetchWithAuth(`/sessions/${id}/stop/`, {
       method: "POST",
-      body: JSON.stringify({ promotion_code: promotionCode }),
+      body: JSON.stringify({
+        payment_type: paymentType,
+        promotion_code: promotionCode
+      }),
     });
 
     if (!response.ok) {

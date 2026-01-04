@@ -5,7 +5,14 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { RentalSession, SessionStatus } from "@/types";
+import { RentalSession, SessionStatus, PaymentType } from "@/types";
+
+// Названия типов оплаты
+const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
+  cash: "💵 Наличные",
+  card: "💳 Карта",
+  transfer: "📱 Перевод",
+};
 import { sessions } from "@/lib/api";
 
 // Форматирование цены
@@ -164,6 +171,9 @@ export default function HistoryPage() {
                     Стоимость
                   </th>
                   <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">
+                    Оплата
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-medium text-gray-400">
                     Статус
                   </th>
                 </tr>
@@ -197,6 +207,9 @@ export default function HistoryPage() {
                     </td>
                     <td className="px-6 py-4 text-yellow-400 font-medium">
                       {formatPrice(session.total_cost)}
+                    </td>
+                    <td className="px-6 py-4 text-gray-300">
+                      {session.payment_type ? PAYMENT_TYPE_LABELS[session.payment_type] : "—"}
                     </td>
                     <td className="px-6 py-4">
                       {getStatusBadge(session.status)}

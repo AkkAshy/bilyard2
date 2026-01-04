@@ -6,6 +6,7 @@
 
 export type SessionStatus = "active" | "completed" | "cancelled" | "expired";
 export type BillingType = "per_minute" | "per_hour" | "fixed" | "per_game";
+export type PaymentType = "cash" | "card" | "transfer";
 export type UserRole = "super_admin" | "admin" | "staff";
 export type TenantRole = "owner" | "manager" | "staff";
 export type DiscountType = "percentage" | "fixed_amount";
@@ -136,6 +137,7 @@ export interface RentalSession {
   discount_amount: number;
   total_cost: number | null;
   status: SessionStatus;
+  payment_type: PaymentType | null;
   metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;

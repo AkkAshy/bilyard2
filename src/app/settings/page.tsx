@@ -26,8 +26,6 @@ export default function SettingsPage() {
     category: "",
     sort_order: "0",
     is_active: true,
-    esp_ip: "",
-    gpio_pin: "2",
   });
 
   // Форма для категории
@@ -67,16 +65,12 @@ export default function SettingsPage() {
     setModalType("asset");
     if (asset) {
       setEditingItem(asset);
-      // Получаем данные ESP из iot_devices если есть
-      const espDevice = asset.iot_devices?.[0];
       setAssetForm({
         name: asset.name,
         description: asset.description || "",
         category: String(asset.category),
         sort_order: String(asset.sort_order),
         is_active: asset.is_active,
-        esp_ip: espDevice?.device?.ip_address || "",
-        gpio_pin: String(espDevice?.config?.gpioPin || 2),
       });
     } else {
       setEditingItem(null);
@@ -86,8 +80,6 @@ export default function SettingsPage() {
         category: categoriesList[0]?.id ? String(categoriesList[0].id) : "",
         sort_order: "0",
         is_active: true,
-        esp_ip: "",
-        gpio_pin: "2",
       });
     }
     setIsModalOpen(true);
@@ -134,12 +126,6 @@ export default function SettingsPage() {
         sort_order: parseInt(assetForm.sort_order),
         is_active: assetForm.is_active,
       };
-
-      // Добавляем ESP данные если указан IP
-      if (assetForm.esp_ip) {
-        data.esp_ip = assetForm.esp_ip;
-        data.gpio_pin = parseInt(assetForm.gpio_pin) || 2;
-      }
 
       if (editingItem) {
         await assets.update((editingItem as Asset).id, data);
@@ -407,40 +393,6 @@ export default function SettingsPage() {
                     className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
                     placeholder="Описание объекта"
                   />
-                </div>
-
-                {/* ESP настройки */}
-                <div className="border-t border-gray-700 pt-4 mt-4">
-                  <h3 className="text-sm font-medium text-gray-400 mb-3">Управление светом (ESP)</h3>
-
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">IP адрес ESP</label>
-                      <input
-                        type="text"
-                        value={assetForm.esp_ip}
-                        onChange={(e) => setAssetForm({ ...assetForm, esp_ip: e.target.value })}
-                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 font-mono"
-                        placeholder="192.168.1.100"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Оставь пустым если нет ESP
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-2">GPIO пин</label>
-                      <input
-                        type="number"
-                        value={assetForm.gpio_pin}
-                        onChange={(e) => setAssetForm({ ...assetForm, gpio_pin: e.target.value })}
-                        className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
-                        placeholder="2"
-                        min="0"
-                        max="16"
-                      />
-                    </div>
-                  </div>
                 </div>
 
                 <div className="flex items-center gap-3 pt-2">

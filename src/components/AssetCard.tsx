@@ -3,13 +3,20 @@
 import { useState, useEffect } from "react";
 import Timer from "./Timer";
 import StartGameModal from "./StartGameModal";
-import { AssetWithSession, RentalSession } from "@/types";
+import { AssetWithSession, PaymentType } from "@/types";
 import { sessions } from "@/lib/api";
 
 interface AssetCardProps {
   asset: AssetWithSession;
   onRefresh: () => void;
 }
+
+// Типы оплаты для UI
+const PAYMENT_TYPES: { value: PaymentType; label: string; icon: string }[] = [
+  { value: "cash", label: "Наличные", icon: "💵" },
+  { value: "card", label: "Карта", icon: "💳" },
+  { value: "transfer", label: "Перевод", icon: "📱" },
+];
 
 // Форматирование цены (будет использовать настройки tenant)
 function formatPrice(amount: number | undefined | null): string {
@@ -27,6 +34,7 @@ function calculateCurrentCost(startedAt: string, pricePerHour: number): number {
 
 export default function AssetCard({ asset, onRefresh }: AssetCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentCost, setCurrentCost] = useState(0);
 
@@ -65,13 +73,19 @@ export default function AssetCard({ asset, onRefresh }: AssetCardProps) {
     }
   };
 
-  // Завершение сессии
-  const handleStop = async () => {
+  // Открыть модалку выбора оплаты
+  const handleStopClick = () => {
+    setIsPaymentModalOpen(true);
+  };
+
+  // Завершение сессии с выбранным типом оплаты
+  const handleStop = async (paymentType: PaymentType) => {
     if (!activeSession) return;
 
     setLoading(true);
+    setIsPaymentModalOpen(false);
     try {
-      const result = await sessions.stop(activeSession.id);
+      const result = await sessions.stop(activeSession.id, paymentType);
       alert(`Сессия завершена!\n\nИтого: ${formatPrice(result.total_cost)}`);
       onRefresh();
     } catch (error) {
@@ -162,7 +176,7 @@ export default function AssetCard({ asset, onRefresh }: AssetCardProps) {
           {/* Action Button */}
           {isActive ? (
             <button
-              onClick={handleStop}
+              onClick={handleStopClick}
               disabled={loading}
               className="w-full py-3.5 px-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 disabled:from-red-800 disabled:to-red-900 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-red-500/25 hover:shadow-red-500/40"
             >
@@ -200,6 +214,44 @@ export default function AssetCard({ asset, onRefresh }: AssetCardProps) {
         onClose={() => setIsModalOpen(false)}
         onStart={handleStart}
       />
+
+      {/* Модалка выбора типа оплаты */}
+      {isPaymentModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsPaymentModalOpen(false)}
+          />
+          <div className="relative bg-gray-800 rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
+            <h2 className="text-xl font-bold text-white mb-2 text-center">
+              Завершение сессии
+            </h2>
+            <p className="text-gray-400 text-sm text-center mb-6">
+              {asset.name} • {formatPrice(currentCost)}
+            </p>
+
+            <div className="space-y-3">
+              {PAYMENT_TYPES.map((pt) => (
+                <button
+                  key={pt.value}
+                  onClick={() => handleStop(pt.value)}
+                  className="w-full py-4 px-4 bg-gray-700 hover:bg-gray-600 text-white font-medium rounded-xl transition-all flex items-center justify-center gap-3 text-lg"
+                >
+                  <span className="text-2xl">{pt.icon}</span>
+                  {pt.label}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setIsPaymentModalOpen(false)}
+              className="w-full mt-4 py-3 px-4 bg-transparent hover:bg-gray-700/50 text-gray-400 font-medium rounded-xl transition-all"
+            >
+              Отмена
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

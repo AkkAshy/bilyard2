@@ -42,9 +42,9 @@ export default function LoginPage() {
               </svg>
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent mb-2">
-              RentFlow
+              Бильярд-клуб
             </h1>
-            <p className="text-gray-400">Система управления арендой</p>
+            <p className="text-gray-400">Система управления</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -122,7 +122,7 @@ export default function LoginPage() {
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-gray-700/50 text-center">
             <p className="text-gray-500 text-sm">
-              RentFlow Management System
+              Бильярд-клуб
             </p>
           </div>
         </div>

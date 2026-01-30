@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RentFlow",
-  description: "Универсальная система управления арендой",
+  title: "Бильярд-клуб",
+  description: "Система управления бильярдным клубом",
 };
 
 export default function RootLayout({

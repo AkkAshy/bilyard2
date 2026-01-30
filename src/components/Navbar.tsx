@@ -47,7 +47,7 @@ const navigation = [
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [tenantName, setTenantName] = useState<string>("RentFlow");
+  const [tenantName, setTenantName] = useState<string>("Бильярд-клуб");
 
   useEffect(() => {
     const name = getTenantName();

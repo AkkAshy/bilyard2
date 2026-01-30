@@ -1,5 +1,5 @@
 /**
- * Types for RentFlow Universal Rental System
+ * Types for Billiard Club Management System
  */
 
 // ==================== ENUMS ====================

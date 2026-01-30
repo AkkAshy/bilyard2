@@ -1,8 +1,9 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { auth } from "@/lib/api";
+import { auth, getTenantName } from "@/lib/api";
 
 const navigation = [
   {
@@ -46,6 +47,12 @@ const navigation = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const [tenantName, setTenantName] = useState<string>("RentFlow");
+
+  useEffect(() => {
+    const name = getTenantName();
+    if (name) setTenantName(name);
+  }, []);
 
   const handleLogout = () => {
     auth.logout();
@@ -64,7 +71,7 @@ export default function Navbar() {
                 </svg>
               </div>
               <span className="text-xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
-                RentFlow
+                {tenantName}
               </span>
             </Link>
 

@@ -32,10 +32,20 @@ export const setTenantId = (tenantId: string) => {
   localStorage.setItem("tenant_id", tenantId);
 };
 
+export const setTenantName = (tenantName: string) => {
+  localStorage.setItem("tenant_name", tenantName);
+};
+
+export const getTenantName = () => {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("tenant_name");
+};
+
 export const clearAuth = () => {
   localStorage.removeItem("access_token");
   localStorage.removeItem("refresh_token");
   localStorage.removeItem("tenant_id");
+  localStorage.removeItem("tenant_name");
 };
 
 // Базовый fetch с авторизацией
@@ -113,6 +123,7 @@ export const auth = {
     // Автоматически выбираем первое заведение
     if (data.tenants?.length > 0) {
       setTenantId(data.tenants[0].id);
+      setTenantName(data.tenants[0].name);
     }
 
     return data;

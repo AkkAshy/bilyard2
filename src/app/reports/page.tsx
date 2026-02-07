@@ -215,21 +215,22 @@ export default function ReportsPage() {
             {data.by_period && data.by_period.length > 0 && (
               <div className="bg-gray-800 rounded-xl p-6 mb-8 border border-gray-700/50">
                 <h2 className="text-lg font-semibold text-white mb-4">Выручка по периодам</h2>
-                <div className="overflow-x-auto">
-                  <div className="flex items-end gap-2" style={{ minHeight: "250px" }}>
+                <div className="overflow-x-auto pb-2">
+                  <div className="flex items-end gap-3" style={{ minWidth: `${data.by_period.length * 80}px` }}>
                     {data.by_period.map((period, i) => {
                       const barHeight = maxRevenue > 0
-                        ? ((period.revenue || 0) / maxRevenue) * 180
-                        : 0;
+                        ? Math.max(((period.revenue || 0) / maxRevenue) * 200, 8)
+                        : 8;
                       return (
-                        <div key={i} className="flex flex-col items-center min-w-[60px]">
-                          <div className="text-xs text-gray-400 mb-1 whitespace-nowrap">
-                            {formatPrice(period.revenue || 0)}
-                          </div>
+                        <div key={i} className="flex-1 flex flex-col items-center" style={{ minWidth: "70px" }}>
                           <div
-                            className="w-10 bg-gradient-to-t from-green-600 to-green-400 rounded-t-lg transition-all"
-                            style={{ height: `${Math.max(barHeight, 4)}px` }}
-                          />
+                            className="w-full max-w-[40px] bg-gradient-to-t from-green-600 to-green-400 rounded-t-lg transition-all hover:from-green-500 hover:to-green-300 cursor-pointer relative group"
+                            style={{ height: `${barHeight}px` }}
+                          >
+                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-green-400 text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-gray-700">
+                              {formatPrice(period.revenue || 0)}
+                            </div>
+                          </div>
                           <div className="text-xs text-gray-500 mt-2 whitespace-nowrap">
                             {period.period ? new Date(period.period).toLocaleDateString("ru-RU", {
                               day: "2-digit",

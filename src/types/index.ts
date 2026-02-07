@@ -215,11 +215,35 @@ export interface TopCategory {
   sessions: number;
 }
 
+export interface RevenueByAsset {
+  asset__id: number;
+  asset__name: string;
+  asset__category__name: string;
+  revenue: number;
+  sessions: number;
+  total_hours: number;
+}
+
+export interface PeakHour {
+  hour: number;
+  sessions: number;
+  revenue: number;
+}
+
+export interface TodayStats {
+  revenue: number;
+  sessions: number;
+  active_now: number;
+}
+
 export interface ReportSummary {
   totals: ReportTotals;
+  today: TodayStats;
   by_period: ReportPeriodData[];
   top_assets: TopAsset[];
   top_categories: TopCategory[];
+  revenue_by_asset: RevenueByAsset[];
+  peak_hours: PeakHour[];
 }
 
 // ==================== LEGACY (для совместимости) ====================

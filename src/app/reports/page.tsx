@@ -11,6 +11,17 @@ function formatPrice(amount: number): string {
   return amount.toLocaleString("ru-RU") + " сум";
 }
 
+// Короткий формат суммы (1.2М, 500К и т.д.)
+function formatShortPrice(amount: number): string {
+  if (amount >= 1_000_000) {
+    return (amount / 1_000_000).toFixed(1).replace(/\.0$/, "") + "М";
+  }
+  if (amount >= 1_000) {
+    return (amount / 1_000).toFixed(0) + "К";
+  }
+  return String(amount);
+}
+
 // Форматирование даты для input
 function formatDateForInput(date: Date): string {
   return date.toISOString().split("T")[0];
@@ -103,6 +114,11 @@ export default function ReportsPage() {
     ? Math.max(...data.by_period.map(p => p.revenue || 0))
     : 0;
 
+  // Максимум сессий для графика пиковых часов
+  const maxPeakSessions = data?.peak_hours?.length
+    ? Math.max(...data.peak_hours.map(h => h.sessions || 0))
+    : 0;
+
   return (
     <div className="min-h-screen bg-gray-900">
       <Navbar />
@@ -177,7 +193,31 @@ export default function ReportsPage() {
           </div>
         ) : data ? (
           <>
-            {/* Сводка */}
+            {/* Доход за сегодня — яркий блок вверху */}
+            {data.today && (
+              <div className="bg-gradient-to-r from-green-900/60 to-emerald-900/40 rounded-xl p-6 mb-6 border border-green-500/30">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <div className="text-sm text-green-300/70 mb-1">Доход за сегодня</div>
+                    <div className="text-3xl font-bold text-green-400">
+                      {formatPrice(data.today.revenue)}
+                    </div>
+                  </div>
+                  <div className="flex gap-6">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-white">{data.today.sessions}</div>
+                      <div className="text-xs text-gray-400">сессий</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-yellow-400">{data.today.active_now}</div>
+                      <div className="text-xs text-gray-400">играют сейчас</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Сводка за период */}
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
               <div className="bg-gradient-to-br from-green-900/40 to-gray-800 rounded-xl p-5 border border-green-500/30">
                 <div className="text-sm text-gray-400 mb-1">Выручка</div>
@@ -211,23 +251,28 @@ export default function ReportsPage() {
               </div>
             </div>
 
-            {/* График */}
+            {/* График выручки — суммы ВСЕГДА видны */}
             {data.by_period && data.by_period.length > 0 && (
               <div className="bg-gray-800 rounded-xl p-6 mb-8 border border-gray-700/50">
                 <h2 className="text-lg font-semibold text-white mb-4">Выручка по периодам</h2>
                 <div className="overflow-x-auto pb-2">
-                  <div className="flex items-end gap-3" style={{ minWidth: `${data.by_period.length * 80}px` }}>
+                  <div className="flex items-end gap-2" style={{ minWidth: `${data.by_period.length * 70}px`, height: "280px" }}>
                     {data.by_period.map((period, i) => {
                       const barHeight = maxRevenue > 0
                         ? Math.max(((period.revenue || 0) / maxRevenue) * 200, 8)
                         : 8;
                       return (
-                        <div key={i} className="flex-1 flex flex-col items-center" style={{ minWidth: "70px" }}>
+                        <div key={i} className="flex-1 flex flex-col items-center justify-end" style={{ minWidth: "60px" }}>
+                          {/* Сумма — всегда видна над баром */}
+                          <div className="text-xs font-medium text-green-400 mb-1 whitespace-nowrap">
+                            {formatShortPrice(period.revenue || 0)}
+                          </div>
                           <div
-                            className="w-full max-w-[40px] bg-gradient-to-t from-green-600 to-green-400 rounded-t-lg transition-all hover:from-green-500 hover:to-green-300 cursor-pointer relative group"
+                            className="w-full max-w-[36px] bg-gradient-to-t from-green-600 to-green-400 rounded-t-lg transition-all hover:from-green-500 hover:to-green-300 cursor-pointer relative group"
                             style={{ height: `${barHeight}px` }}
                           >
-                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-green-400 text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-gray-700">
+                            {/* Полная сумма при наведении */}
+                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-green-400 text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-gray-700 z-10">
                               {formatPrice(period.revenue || 0)}
                             </div>
                           </div>
@@ -240,6 +285,100 @@ export default function ReportsPage() {
                         </div>
                       );
                     })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Выручка по столам */}
+            {data.revenue_by_asset && data.revenue_by_asset.length > 0 && (
+              <div className="bg-gray-800 rounded-xl p-6 mb-8 border border-gray-700/50">
+                <h2 className="text-lg font-semibold text-white mb-4">Выручка по столам</h2>
+                <div className="space-y-3">
+                  {data.revenue_by_asset.map((asset, i) => {
+                    const maxAssetRevenue = data.revenue_by_asset[0]?.revenue || 1;
+                    const barWidth = Math.max((asset.revenue / maxAssetRevenue) * 100, 5);
+                    return (
+                      <div key={i}>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-2">
+                            <span className="text-white font-medium">{asset.asset__name}</span>
+                            <span className="text-xs text-gray-500">{asset.asset__category__name}</span>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className="text-xs text-gray-500">{asset.sessions} сессий</span>
+                            <span className="text-xs text-gray-500">{asset.total_hours} ч</span>
+                            <span className="text-green-400 font-semibold">{formatPrice(asset.revenue)}</span>
+                          </div>
+                        </div>
+                        {/* Прогресс-бар */}
+                        <div className="w-full bg-gray-700 rounded-full h-2">
+                          <div
+                            className="bg-gradient-to-r from-green-500 to-emerald-400 h-2 rounded-full transition-all"
+                            style={{ width: `${barWidth}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Пиковые часы */}
+            {data.peak_hours && data.peak_hours.length > 0 && (
+              <div className="bg-gray-800 rounded-xl p-6 mb-8 border border-gray-700/50">
+                <h2 className="text-lg font-semibold text-white mb-4">Пиковые часы</h2>
+                <div className="overflow-x-auto pb-2">
+                  <div className="flex items-end gap-1" style={{ height: "180px" }}>
+                    {/* Заполняем все 24 часа */}
+                    {Array.from({ length: 24 }, (_, hour) => {
+                      const hourData = data.peak_hours.find(h => h.hour === hour);
+                      const sessions = hourData?.sessions || 0;
+                      const barHeight = maxPeakSessions > 0
+                        ? Math.max((sessions / maxPeakSessions) * 140, 4)
+                        : 4;
+                      const isHot = sessions > maxPeakSessions * 0.7;
+                      const isWarm = sessions > maxPeakSessions * 0.4;
+
+                      return (
+                        <div key={hour} className="flex-1 flex flex-col items-center justify-end" style={{ minWidth: "28px" }}>
+                          {sessions > 0 && (
+                            <div className="text-xs text-gray-400 mb-1">{sessions}</div>
+                          )}
+                          <div
+                            className={`w-full max-w-[20px] rounded-t transition-all cursor-pointer relative group ${
+                              isHot
+                                ? "bg-gradient-to-t from-red-600 to-orange-400"
+                                : isWarm
+                                  ? "bg-gradient-to-t from-yellow-600 to-yellow-400"
+                                  : "bg-gradient-to-t from-blue-700 to-blue-500"
+                            }`}
+                            style={{ height: `${barHeight}px` }}
+                          >
+                            {/* Тултип с выручкой при наведении */}
+                            {hourData && (
+                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-gray-700 z-10">
+                                {formatPrice(hourData.revenue)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">{hour}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                {/* Легенда */}
+                <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded bg-red-500" /> Пиковое
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded bg-yellow-500" /> Среднее
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded bg-blue-600" /> Спокойное
                   </div>
                 </div>
               </div>

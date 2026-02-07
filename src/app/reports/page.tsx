@@ -215,29 +215,31 @@ export default function ReportsPage() {
             {data.by_period && data.by_period.length > 0 && (
               <div className="bg-gray-800 rounded-xl p-6 mb-8 border border-gray-700/50">
                 <h2 className="text-lg font-semibold text-white mb-4">Выручка по периодам</h2>
-                <div className="flex items-end gap-2 h-48 overflow-x-auto pb-2">
-                  {data.by_period.map((period, i) => {
-                    const height = maxRevenue > 0
-                      ? ((period.revenue || 0) / maxRevenue) * 100
-                      : 0;
-                    return (
-                      <div key={i} className="flex flex-col items-center min-w-[60px]">
-                        <div className="text-xs text-gray-400 mb-1">
-                          {formatPrice(period.revenue || 0)}
+                <div className="overflow-x-auto">
+                  <div className="flex items-end gap-2" style={{ minHeight: "250px" }}>
+                    {data.by_period.map((period, i) => {
+                      const barHeight = maxRevenue > 0
+                        ? ((period.revenue || 0) / maxRevenue) * 180
+                        : 0;
+                      return (
+                        <div key={i} className="flex flex-col items-center min-w-[60px]">
+                          <div className="text-xs text-gray-400 mb-1 whitespace-nowrap">
+                            {formatPrice(period.revenue || 0)}
+                          </div>
+                          <div
+                            className="w-10 bg-gradient-to-t from-green-600 to-green-400 rounded-t-lg transition-all"
+                            style={{ height: `${Math.max(barHeight, 4)}px` }}
+                          />
+                          <div className="text-xs text-gray-500 mt-2 whitespace-nowrap">
+                            {period.period ? new Date(period.period).toLocaleDateString("ru-RU", {
+                              day: "2-digit",
+                              month: "short"
+                            }) : "—"}
+                          </div>
                         </div>
-                        <div
-                          className="w-10 bg-gradient-to-t from-green-600 to-green-400 rounded-t-lg transition-all"
-                          style={{ height: `${Math.max(height, 5)}%` }}
-                        />
-                        <div className="text-xs text-gray-500 mt-2 whitespace-nowrap">
-                          {period.period ? new Date(period.period).toLocaleDateString("ru-RU", {
-                            day: "2-digit",
-                            month: "short"
-                          }) : "—"}
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             )}

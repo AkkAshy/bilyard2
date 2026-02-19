@@ -292,6 +292,18 @@ export const sessions = {
     return response.json();
   },
 
+  async summary(params?: { asset?: number; status?: string; from?: string; to?: string }): Promise<{ count: number; total_revenue: number; avg_duration: number }> {
+    const searchParams = new URLSearchParams();
+    if (params?.asset) searchParams.set("asset", String(params.asset));
+    if (params?.status) searchParams.set("status", params.status);
+    if (params?.from) searchParams.set("from", params.from);
+    if (params?.to) searchParams.set("to", params.to);
+
+    const query = searchParams.toString();
+    const response = await fetchWithAuth(`/sessions/summary/${query ? `?${query}` : ""}`);
+    return response.json();
+  },
+
   async start(assetId: number, plannedDuration?: number) {
     const response = await fetchWithAuth("/sessions/start/", {
       method: "POST",

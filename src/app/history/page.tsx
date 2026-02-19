@@ -52,36 +52,47 @@ export default function HistoryPage() {
     return formatDateTimeForInput(d);
   });
 
-  // Итоги по текущей выборке
-  const totalRevenue = sessionsList.reduce((sum, s) => sum + (s.total_cost || 0), 0);
-  const avgDuration = sessionsList.length > 0
-    ? Math.round(sessionsList.reduce((sum, s) => sum + (s.actual_duration || 0), 0) / sessionsList.length)
-    : 0;
+  // Итоги по всей выборке (с бэкенда)
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [avgDuration, setAvgDuration] = useState(0);
 
   // Загрузка списка объектов (один раз)
   useEffect(() => {
     assets.list().then(setAssetsList).catch(console.error);
   }, []);
 
-  // Загрузка сессий
+  // Параметры фильтрации (без page)
+  const filterParams = useCallback(() => {
+    const params: { status?: string; asset?: number; from?: string; to?: string } = {};
+    if (statusFilter !== "all") params.status = statusFilter;
+    if (assetFilter) params.asset = assetFilter;
+    if (fromDate) params.from = fromDate;
+    if (toDate) params.to = toDate;
+    return params;
+  }, [statusFilter, assetFilter, fromDate, toDate]);
+
+  // Загрузка сессий + итогов
   const fetchSessions = useCallback(async () => {
     setLoading(true);
     try {
-      const params: { status?: string; asset?: number; from?: string; to?: string; page?: number } = { page };
-      if (statusFilter !== "all") params.status = statusFilter;
-      if (assetFilter) params.asset = assetFilter;
-      if (fromDate) params.from = fromDate;
-      if (toDate) params.to = toDate;
+      const params = filterParams();
 
-      const data = await sessions.listPaginated(params);
+      // Параллельно: страница данных + итоги по всей выборке
+      const [data, summaryData] = await Promise.all([
+        sessions.listPaginated({ ...params, page }),
+        sessions.summary(params),
+      ]);
+
       setSessionsList(data.results || []);
-      setTotalCount(data.count || 0);
+      setTotalCount(summaryData.count || 0);
+      setTotalRevenue(summaryData.total_revenue || 0);
+      setAvgDuration(summaryData.avg_duration || 0);
     } catch (error) {
       console.error("Error fetching sessions:", error);
     } finally {
       setLoading(false);
     }
-  }, [statusFilter, assetFilter, fromDate, toDate, page]);
+  }, [filterParams, page]);
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");

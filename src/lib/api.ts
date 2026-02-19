@@ -206,7 +206,11 @@ export const categories = {
   },
 
   async delete(id: number) {
-    await fetchWithAuth(`/categories/${id}/`, { method: "DELETE" });
+    const response = await fetchWithAuth(`/categories/${id}/`, { method: "DELETE" });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || "Ошибка удаления категории");
+    }
   },
 };
 
@@ -246,7 +250,11 @@ export const assets = {
   },
 
   async delete(id: number) {
-    await fetchWithAuth(`/assets/${id}/`, { method: "DELETE" });
+    const response = await fetchWithAuth(`/assets/${id}/`, { method: "DELETE" });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || "Ошибка удаления объекта");
+    }
   },
 
   async getSessions(id: number) {
@@ -269,6 +277,19 @@ export const sessions = {
     const response = await fetchWithAuth(`/sessions/${query ? `?${query}` : ""}`);
     const data = await response.json();
     return extractResults<RentalSession>(data);
+  },
+
+  async listPaginated(params?: { asset?: number; status?: string; from?: string; to?: string; page?: number }): Promise<{ results: RentalSession[]; count: number; next: string | null; previous: string | null }> {
+    const searchParams = new URLSearchParams();
+    if (params?.asset) searchParams.set("asset", String(params.asset));
+    if (params?.status) searchParams.set("status", params.status);
+    if (params?.from) searchParams.set("from", params.from);
+    if (params?.to) searchParams.set("to", params.to);
+    if (params?.page) searchParams.set("page", String(params.page));
+
+    const query = searchParams.toString();
+    const response = await fetchWithAuth(`/sessions/${query ? `?${query}` : ""}`);
+    return response.json();
   },
 
   async start(assetId: number, plannedDuration?: number) {

@@ -22,9 +22,10 @@ function formatShortPrice(amount: number): string {
   return String(amount);
 }
 
-// Форматирование даты для input
-function formatDateForInput(date: Date): string {
-  return date.toISOString().split("T")[0];
+// Форматирование даты+времени для input (datetime-local)
+function formatDateTimeForInput(date: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 export default function ReportsPage() {
@@ -33,13 +34,18 @@ export default function ReportsPage() {
   const [loading, setLoading] = useState(true);
   const [groupBy, setGroupBy] = useState<"day" | "week" | "month" | "year">("day");
 
-  // Фильтры по дате
+  // Фильтры по дате+времени
   const [fromDate, setFromDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - 30);
-    return formatDateForInput(d);
+    d.setHours(0, 0, 0, 0);
+    return formatDateTimeForInput(d);
   });
-  const [toDate, setToDate] = useState(() => formatDateForInput(new Date()));
+  const [toDate, setToDate] = useState(() => {
+    const d = new Date();
+    d.setHours(23, 59, 0, 0);
+    return formatDateTimeForInput(d);
+  });
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -156,7 +162,7 @@ export default function ReportsPage() {
             <div>
               <label className="block text-xs text-gray-400 mb-1">От</label>
               <input
-                type="date"
+                type="datetime-local"
                 value={fromDate}
                 onChange={(e) => setFromDate(e.target.value)}
                 className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -165,7 +171,7 @@ export default function ReportsPage() {
             <div>
               <label className="block text-xs text-gray-400 mb-1">До</label>
               <input
-                type="date"
+                type="datetime-local"
                 value={toDate}
                 onChange={(e) => setToDate(e.target.value)}
                 className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"

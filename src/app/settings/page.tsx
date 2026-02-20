@@ -178,21 +178,13 @@ export default function SettingsPage() {
 
   // Удаление объекта
   const handleDeleteAsset = async (asset: Asset) => {
-    if (!confirm(`Удалить "${asset.name}"?`)) return;
+    if (!confirm(`Удалить "${asset.name}"? Вся история сессий тоже удалится!`)) return;
 
     try {
       await assets.delete(asset.id);
       fetchData();
-    } catch {
-      // Есть связанные сессии — деактивируем вместо удаления
-      if (confirm(`У "${asset.name}" есть история сессий.\nДеактивировать объект? Он скроется из дашборда, но история сохранится.`)) {
-        try {
-          await assets.update(asset.id, { is_active: false });
-          fetchData();
-        } catch (e) {
-          alert(e instanceof Error ? e.message : "Ошибка деактивации");
-        }
-      }
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Ошибка удаления");
     }
   };
 

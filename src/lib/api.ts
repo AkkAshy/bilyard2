@@ -178,8 +178,9 @@ function extractResults<T>(data: T[] | { results: T[] }): T[] {
 }
 
 export const categories = {
-  async list(): Promise<Category[]> {
-    const response = await fetchWithAuth("/categories/");
+  async list(params?: { all?: boolean }): Promise<Category[]> {
+    const query = params?.all ? "?all=true" : "";
+    const response = await fetchWithAuth(`/categories/${query}`);
     const data = await response.json();
     return extractResults<Category>(data);
   },
@@ -217,10 +218,11 @@ export const categories = {
 // ==================== ASSETS ====================
 
 export const assets = {
-  async list(params?: { category?: number; active?: boolean }): Promise<AssetWithSession[]> {
+  async list(params?: { category?: number; active?: boolean; all?: boolean }): Promise<AssetWithSession[]> {
     const searchParams = new URLSearchParams();
     if (params?.category) searchParams.set("category", String(params.category));
     if (params?.active !== undefined) searchParams.set("active", String(params.active));
+    if (params?.all) searchParams.set("all", "true");
 
     const query = searchParams.toString();
     const response = await fetchWithAuth(`/assets/${query ? `?${query}` : ""}`);

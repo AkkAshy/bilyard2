@@ -49,8 +49,8 @@ export default function SettingsPage() {
   const fetchData = async () => {
     try {
       const [assetsData, categoriesData] = await Promise.all([
-        assets.list(),
-        categoriesApi.list()
+        assets.list({ all: true }),
+        categoriesApi.list({ all: true })
       ]);
       setAssetsList(assetsData);
       setCategoriesList(categoriesData);

@@ -183,9 +183,16 @@ export default function SettingsPage() {
     try {
       await assets.delete(asset.id);
       fetchData();
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : "Ошибка удаления";
-      alert(msg);
+    } catch {
+      // Есть связанные сессии — деактивируем вместо удаления
+      if (confirm(`У "${asset.name}" есть история сессий.\nДеактивировать объект? Он скроется из дашборда, но история сохранится.`)) {
+        try {
+          await assets.update(asset.id, { is_active: false });
+          fetchData();
+        } catch (e) {
+          alert(e instanceof Error ? e.message : "Ошибка деактивации");
+        }
+      }
     }
   };
 
@@ -196,9 +203,8 @@ export default function SettingsPage() {
     try {
       await categoriesApi.delete(category.id);
       fetchData();
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : "Ошибка удаления";
-      alert(msg);
+    } catch {
+      alert("Нельзя удалить категорию — в ней есть объекты. Сначала удали или перемести их.");
     }
   };
 

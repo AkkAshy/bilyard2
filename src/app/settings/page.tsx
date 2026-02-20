@@ -184,7 +184,8 @@ export default function SettingsPage() {
       await assets.delete(asset.id);
       fetchData();
     } catch (error) {
-      console.error("Error deleting asset:", error);
+      const msg = error instanceof Error ? error.message : "Ошибка удаления";
+      alert(msg);
     }
   };
 
@@ -196,7 +197,8 @@ export default function SettingsPage() {
       await categoriesApi.delete(category.id);
       fetchData();
     } catch (error) {
-      console.error("Error deleting category:", error);
+      const msg = error instanceof Error ? error.message : "Ошибка удаления";
+      alert(msg);
     }
   };
 

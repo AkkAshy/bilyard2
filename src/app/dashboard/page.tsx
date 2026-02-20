@@ -10,6 +10,7 @@ import { assets, categories as categoriesApi } from "@/lib/api";
 export default function DashboardPage() {
   const router = useRouter();
   const [assetsList, setAssetsList] = useState<AssetWithSession[]>([]);
+  const [allAssetsList, setAllAssetsList] = useState<AssetWithSession[]>([]);
   const [categoriesList, setCategoriesList] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -17,12 +18,13 @@ export default function DashboardPage() {
   // Загрузка данных
   const fetchData = useCallback(async () => {
     try {
-      const [assetsData, categoriesData] = await Promise.all([
+      const [assetsData, allAssetsData, categoriesData] = await Promise.all([
         assets.list({ category: selectedCategory || undefined }),
+        assets.list({ all: true }),
         categoriesApi.list()
       ]);
-      // Защита от не-массива (на случай ошибки API)
       setAssetsList(Array.isArray(assetsData) ? assetsData : []);
+      setAllAssetsList(Array.isArray(allAssetsData) ? allAssetsData : []);
       setCategoriesList(Array.isArray(categoriesData) ? categoriesData : []);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -48,9 +50,13 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, [fetchData, router]);
 
-  // Фильтрация объектов
+  // Карточки на дашборде (только активные объекты)
   const activeAssets = assetsList.filter((a) => a.active_session !== null);
   const freeAssets = assetsList.filter((a) => a.active_session === null);
+
+  // Статистика по ВСЕМ объектам (включая деактивированные)
+  const allActive = allAssetsList.filter((a) => a.active_session !== null);
+  const totalCount = allAssetsList.length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800">
@@ -70,7 +76,7 @@ export default function DashboardPage() {
                   </svg>
                 </div>
               </div>
-              <div className="text-3xl font-bold text-white">{assetsList.length}</div>
+              <div className="text-3xl font-bold text-white">{totalCount}</div>
               <div className="text-sm text-gray-400">Всего объектов</div>
             </div>
           </div>
@@ -86,14 +92,14 @@ export default function DashboardPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                {activeAssets.length > 0 && (
+                {allActive.length > 0 && (
                   <span className="flex h-3 w-3">
                     <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                   </span>
                 )}
               </div>
-              <div className="text-3xl font-bold text-green-400">{activeAssets.length}</div>
+              <div className="text-3xl font-bold text-green-400">{allActive.length}</div>
               <div className="text-sm text-gray-400">Активных</div>
             </div>
           </div>
@@ -109,7 +115,7 @@ export default function DashboardPage() {
                   </svg>
                 </div>
               </div>
-              <div className="text-3xl font-bold text-gray-300">{freeAssets.length}</div>
+              <div className="text-3xl font-bold text-gray-300">{totalCount - allActive.length}</div>
               <div className="text-sm text-gray-400">Свободных</div>
             </div>
           </div>
@@ -126,7 +132,7 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="text-3xl font-bold text-yellow-400">
-                {assetsList.length > 0 ? Math.round((activeAssets.length / assetsList.length) * 100) : 0}%
+                {totalCount > 0 ? Math.round((allActive.length / totalCount) * 100) : 0}%
               </div>
               <div className="text-sm text-gray-400">Загрузка</div>
             </div>

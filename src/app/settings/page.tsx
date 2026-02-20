@@ -49,8 +49,8 @@ export default function SettingsPage() {
   const fetchData = async () => {
     try {
       const [assetsData, categoriesData] = await Promise.all([
-        assets.list({ all: true }),
-        categoriesApi.list({ all: true })
+        assets.list(),
+        categoriesApi.list()
       ]);
       setAssetsList(assetsData);
       setCategoriesList(categoriesData);
@@ -178,7 +178,7 @@ export default function SettingsPage() {
 
   // Удаление объекта
   const handleDeleteAsset = async (asset: Asset) => {
-    if (!confirm(`Удалить "${asset.name}"? Вся история сессий тоже удалится!`)) return;
+    if (!confirm(`Удалить "${asset.name}"?`)) return;
 
     try {
       await assets.delete(asset.id);

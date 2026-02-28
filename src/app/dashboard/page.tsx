@@ -20,7 +20,7 @@ export default function DashboardPage() {
     try {
       const [assetsData, allAssetsData, categoriesData] = await Promise.all([
         assets.list({ category: selectedCategory || undefined }),
-        assets.list({ all: true }),
+        assets.list({}),
         categoriesApi.list()
       ]);
       setAssetsList(Array.isArray(assetsData) ? assetsData : []);
@@ -54,7 +54,7 @@ export default function DashboardPage() {
   const activeAssets = assetsList.filter((a) => a.active_session !== null);
   const freeAssets = assetsList.filter((a) => a.active_session === null);
 
-  // Статистика по ВСЕМ объектам (включая деактивированные)
+  // Статистика по всем активным объектам (без деактивированных)
   const allActive = allAssetsList.filter((a) => a.active_session !== null);
   const totalCount = allAssetsList.length;
 

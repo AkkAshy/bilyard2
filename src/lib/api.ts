@@ -6,6 +6,27 @@ import type { Category, Asset, AssetWithSession, RentalSession } from "@/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
+// Смещение между часами клиента и сервера (мс)
+// serverTime = clientTime + serverTimeOffset
+let serverTimeOffset = 0;
+
+export function getServerNow(): Date {
+  return new Date(Date.now() + serverTimeOffset);
+}
+
+/**
+ * Вычисляет смещение часов клиента относительно сервера
+ * по заголовку Date из ответа
+ */
+function syncServerTime(response: Response) {
+  const serverDateStr = response.headers.get("Date");
+  if (serverDateStr) {
+    const serverTime = new Date(serverDateStr).getTime();
+    const clientTime = Date.now();
+    serverTimeOffset = serverTime - clientTime;
+  }
+}
+
 // Токены хранятся в localStorage
 const getAccessToken = () => {
   if (typeof window === "undefined") return null;
@@ -73,6 +94,9 @@ async function fetchWithAuth(
     ...options,
     headers,
   });
+
+  // Синхронизируем часы с сервером
+  syncServerTime(response);
 
   // Если 401 - пробуем обновить токен
   if (response.status === 401) {

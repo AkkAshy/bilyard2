@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { getServerNow } from "@/lib/api";
 
 interface TimerProps {
   startedAt: string; // ISO строка даты
@@ -54,7 +55,7 @@ export default function Timer({ startedAt, duration, onExpired }: TimerProps) {
 
   useEffect(() => {
     const updateTimer = () => {
-      const now = new Date();
+      const now = getServerNow();
       const start = new Date(startedAt);
       const elapsedMs = now.getTime() - start.getTime();
       const elapsedMinutes = Math.floor(elapsedMs / 60000);

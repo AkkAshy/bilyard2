@@ -192,6 +192,11 @@ export const tenants = {
     });
     return response.json();
   },
+
+  async getCurrencies() {
+    const response = await fetchWithAuth("/tenants/currencies/");
+    return response.json();
+  },
 };
 
 // ==================== CATEGORIES ====================

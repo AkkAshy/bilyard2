@@ -3,15 +3,20 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import { Asset, Category } from "@/types";
-import { assets, categories as categoriesApi } from "@/lib/api";
+import { Asset, Category, TenantSettings } from "@/types";
+import { assets, categories as categoriesApi, tenants } from "@/lib/api";
 
 export default function SettingsPage() {
   const router = useRouter();
   const [assetsList, setAssetsList] = useState<Asset[]>([]);
   const [categoriesList, setCategoriesList] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"assets" | "categories">("assets");
+  const [activeTab, setActiveTab] = useState<"general" | "assets" | "categories">("assets");
+
+  // Общие настройки
+  const [settings, setSettings] = useState<TenantSettings | null>(null);
+  const [currencies, setCurrencies] = useState<{ code: string; label: string; symbol: string }[]>([]);
+  const [savingSettings, setSavingSettings] = useState(false);
 
   // Модалка
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,16 +53,38 @@ export default function SettingsPage() {
 
   const fetchData = async () => {
     try {
-      const [assetsData, categoriesData] = await Promise.all([
+      const [assetsData, categoriesData, settingsData, currenciesData] = await Promise.all([
         assets.list(),
-        categoriesApi.list()
+        categoriesApi.list(),
+        tenants.getSettings(),
+        tenants.getCurrencies(),
       ]);
       setAssetsList(assetsData);
       setCategoriesList(categoriesData);
+      setSettings(settingsData);
+      setCurrencies(currenciesData);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveSettings = async () => {
+    if (!settings) return;
+    setSavingSettings(true);
+    try {
+      const updated = await tenants.updateSettings({
+        currency: settings.currency,
+        default_billing_type: settings.default_billing_type,
+        default_price: settings.default_price,
+      });
+      setSettings(updated);
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      alert("Ошибка сохранения настроек");
+    } finally {
+      setSavingSettings(false);
     }
   };
 
@@ -208,6 +235,16 @@ export default function SettingsPage() {
         {/* Tabs */}
         <div className="flex items-center gap-4 mb-6">
           <button
+            onClick={() => setActiveTab("general")}
+            className={`px-4 py-2 rounded-lg font-medium transition ${
+              activeTab === "general"
+                ? "bg-green-600 text-white"
+                : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+            }`}
+          >
+            Общие
+          </button>
+          <button
             onClick={() => setActiveTab("assets")}
             className={`px-4 py-2 rounded-lg font-medium transition ${
               activeTab === "assets"
@@ -230,12 +267,14 @@ export default function SettingsPage() {
 
           <div className="flex-1" />
 
-          <button
-            onClick={() => activeTab === "assets" ? openAssetModal() : openCategoryModal()}
-            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition"
-          >
-            + Добавить {activeTab === "assets" ? "объект" : "категорию"}
-          </button>
+          {activeTab !== "general" && (
+            <button
+              onClick={() => activeTab === "assets" ? openAssetModal() : openCategoryModal()}
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition"
+            >
+              + Добавить {activeTab === "assets" ? "объект" : "категорию"}
+            </button>
+          )}
         </div>
 
         {loading ? (
@@ -244,6 +283,67 @@ export default function SettingsPage() {
           </div>
         ) : (
           <>
+            {/* General Settings */}
+            {activeTab === "general" && settings && (
+              <div className="bg-gray-800 rounded-xl p-6 max-w-lg space-y-6">
+                <h2 className="text-lg font-bold text-white">Настройки заведения</h2>
+
+                {/* Валюта */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Валюта</label>
+                  <select
+                    value={settings.currency}
+                    onChange={(e) => setSettings({ ...settings, currency: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    {currencies.map((c) => (
+                      <option key={c.code} value={c.code}>
+                        {c.symbol} — {c.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Тип расчёта */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Тип расчёта по умолчанию</label>
+                  <select
+                    value={settings.default_billing_type}
+                    onChange={(e) => setSettings({ ...settings, default_billing_type: e.target.value as TenantSettings["default_billing_type"] })}
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="per_hour">Почасово</option>
+                    <option value="per_minute">Поминутно</option>
+                    <option value="fixed">Фиксированная</option>
+                    <option value="per_game">За игру</option>
+                  </select>
+                </div>
+
+                {/* Цена по умолчанию */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Цена по умолчанию</label>
+                  <input
+                    type="number"
+                    value={settings.default_price}
+                    onChange={(e) => setSettings({ ...settings, default_price: parseInt(e.target.value) || 0 })}
+                    className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+
+                <button
+                  onClick={handleSaveSettings}
+                  disabled={savingSettings}
+                  className="px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-green-800 disabled:cursor-not-allowed text-white font-medium rounded-lg transition flex items-center gap-2"
+                >
+                  {savingSettings ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    "Сохранить"
+                  )}
+                </button>
+              </div>
+            )}
+
             {/* Assets Table */}
             {activeTab === "assets" && (
               <div className="bg-gray-800 rounded-xl overflow-hidden overflow-x-auto">

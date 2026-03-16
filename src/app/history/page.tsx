@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { RentalSession, SessionStatus, PaymentType, Asset } from "@/types";
 import { sessions, assets } from "@/lib/api";
+import { useCurrencySymbol, formatPrice } from "@/lib/currency";
 
 // Названия типов оплаты
 const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
@@ -14,12 +15,6 @@ const PAYMENT_TYPE_LABELS: Record<PaymentType, string> = {
   card: "💳 Карта",
   transfer: "📱 Перевод",
 };
-
-// Форматирование цены
-function formatPrice(amount: number | null): string {
-  if (amount === null) return "—";
-  return amount.toLocaleString("ru-RU") + " сум";
-}
 
 // Форматирование даты+времени для input
 function formatDateTimeForInput(date: Date): string {
@@ -31,6 +26,7 @@ const PAGE_SIZE = 20;
 
 export default function HistoryPage() {
   const router = useRouter();
+  const currencySymbol = useCurrencySymbol();
   const [sessionsList, setSessionsList] = useState<RentalSession[]>([]);
   const [assetsList, setAssetsList] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
@@ -210,7 +206,7 @@ export default function HistoryPage() {
           </div>
           <div className="bg-gradient-to-br from-green-900/40 to-gray-800 rounded-xl p-4 border border-green-500/30">
             <div className="text-sm text-gray-400 mb-1">Выручка (на стр.)</div>
-            <div className="text-2xl font-bold text-green-400">{formatPrice(totalRevenue)}</div>
+            <div className="text-2xl font-bold text-green-400">{formatPrice(totalRevenue, currencySymbol)}</div>
           </div>
           <div className="bg-gray-800 rounded-xl p-4 border border-gray-700/50">
             <div className="text-sm text-gray-400 mb-1">Ср. длительность</div>
@@ -262,7 +258,7 @@ export default function HistoryPage() {
                         {formatDuration(session.actual_duration)}
                       </td>
                       <td className="px-4 py-3 text-green-400 font-medium text-sm">
-                        {formatPrice(session.total_cost)}
+                        {formatPrice(session.total_cost, currencySymbol)}
                       </td>
                       <td className="px-4 py-3 text-gray-300 text-sm">
                         {session.payment_type ? PAYMENT_TYPE_LABELS[session.payment_type] : "—"}

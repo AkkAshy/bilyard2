@@ -5,11 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { ReportSummary } from "@/types";
 import { reports } from "@/lib/api";
-
-// Форматирование цены
-function formatPrice(amount: number): string {
-  return amount.toLocaleString("ru-RU") + " сум";
-}
+import { useCurrencySymbol, formatPrice } from "@/lib/currency";
 
 // Короткий формат суммы (1.2М, 500К и т.д.)
 function formatShortPrice(amount: number): string {
@@ -30,6 +26,8 @@ function formatDateTimeForInput(date: Date): string {
 
 export default function ReportsPage() {
   const router = useRouter();
+  const currencySymbol = useCurrencySymbol();
+  const fmtPrice = (amount: number) => formatPrice(amount, currencySymbol);
   const [data, setData] = useState<ReportSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [groupBy, setGroupBy] = useState<"day" | "week" | "month" | "year">("day");
@@ -206,7 +204,7 @@ export default function ReportsPage() {
                   <div>
                     <div className="text-sm text-green-300/70 mb-1">Доход за сегодня</div>
                     <div className="text-3xl font-bold text-green-400">
-                      {formatPrice(data.today.revenue)}
+                      {fmtPrice(data.today.revenue)}
                     </div>
                   </div>
                   <div className="flex gap-6">
@@ -228,7 +226,7 @@ export default function ReportsPage() {
               <div className="bg-gradient-to-br from-green-900/40 to-gray-800 rounded-xl p-5 border border-green-500/30">
                 <div className="text-sm text-gray-400 mb-1">Выручка</div>
                 <div className="text-2xl font-bold text-green-400">
-                  {formatPrice(data.totals.revenue)}
+                  {fmtPrice(data.totals.revenue)}
                 </div>
               </div>
               <div className="bg-gray-800 rounded-xl p-5 border border-gray-700/50">
@@ -240,7 +238,7 @@ export default function ReportsPage() {
               <div className="bg-gray-800 rounded-xl p-5 border border-gray-700/50">
                 <div className="text-sm text-gray-400 mb-1">Средний чек</div>
                 <div className="text-2xl font-bold text-yellow-400">
-                  {formatPrice(data.totals.avg_check)}
+                  {fmtPrice(data.totals.avg_check)}
                 </div>
               </div>
               <div className="bg-gray-800 rounded-xl p-5 border border-gray-700/50">
@@ -279,7 +277,7 @@ export default function ReportsPage() {
                           >
                             {/* Полная сумма при наведении */}
                             <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-green-400 text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-gray-700 z-10">
-                              {formatPrice(period.revenue || 0)}
+                              {fmtPrice(period.revenue || 0)}
                             </div>
                           </div>
                           <div className="text-xs text-gray-500 mt-2 whitespace-nowrap">
@@ -314,7 +312,7 @@ export default function ReportsPage() {
                           <div className="flex items-center gap-4">
                             <span className="text-xs text-gray-500">{asset.sessions} сессий</span>
                             <span className="text-xs text-gray-500">{asset.total_hours} ч</span>
-                            <span className="text-green-400 font-semibold">{formatPrice(asset.revenue)}</span>
+                            <span className="text-green-400 font-semibold">{fmtPrice(asset.revenue)}</span>
                           </div>
                         </div>
                         {/* Прогресс-бар */}
@@ -365,7 +363,7 @@ export default function ReportsPage() {
                             {/* Тултип с выручкой при наведении */}
                             {hourData && (
                               <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-gray-700 z-10">
-                                {formatPrice(hourData.revenue)}
+                                {fmtPrice(hourData.revenue)}
                               </div>
                             )}
                           </div>
@@ -409,7 +407,7 @@ export default function ReportsPage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-green-400 font-medium">{formatPrice(asset.revenue)}</div>
+                          <div className="text-green-400 font-medium">{fmtPrice(asset.revenue)}</div>
                           <div className="text-xs text-gray-500">{asset.sessions} сессий</div>
                         </div>
                       </div>
@@ -432,7 +430,7 @@ export default function ReportsPage() {
                           <div className="text-white font-medium">{cat.asset__category__name}</div>
                         </div>
                         <div className="text-right">
-                          <div className="text-green-400 font-medium">{formatPrice(cat.revenue)}</div>
+                          <div className="text-green-400 font-medium">{fmtPrice(cat.revenue)}</div>
                           <div className="text-xs text-gray-500">{cat.sessions} сессий</div>
                         </div>
                       </div>

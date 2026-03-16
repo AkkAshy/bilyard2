@@ -5,6 +5,7 @@ import Timer from "./Timer";
 import StartGameModal from "./StartGameModal";
 import { AssetWithSession, PaymentType } from "@/types";
 import { sessions } from "@/lib/api";
+import { useCurrencySymbol, formatPrice } from "@/lib/currency";
 
 interface AssetCardProps {
   asset: AssetWithSession;
@@ -17,12 +18,6 @@ const PAYMENT_TYPES: { value: PaymentType; label: string; icon: string }[] = [
   { value: "card", label: "Карта", icon: "💳" },
   { value: "transfer", label: "Перевод", icon: "📱" },
 ];
-
-// Форматирование цены (будет использовать настройки tenant)
-function formatPrice(amount: number | undefined | null): string {
-  if (amount === undefined || amount === null) return "—";
-  return amount.toLocaleString("ru-RU") + " сум";
-}
 
 // Расчёт текущей стоимости
 function calculateCurrentCost(startedAt: string, pricePerHour: number): number {
@@ -37,6 +32,7 @@ export default function AssetCard({ asset, onRefresh }: AssetCardProps) {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentCost, setCurrentCost] = useState(0);
+  const currencySymbol = useCurrencySymbol();
 
   const isActive = asset.active_session !== null;
   const activeSession = asset.active_session;
@@ -86,7 +82,7 @@ export default function AssetCard({ asset, onRefresh }: AssetCardProps) {
     setIsPaymentModalOpen(false);
     try {
       const result = await sessions.stop(activeSession.id, paymentType);
-      alert(`Сессия завершена!\n\nИтого: ${formatPrice(result.total_cost)}`);
+      alert(`Сессия завершена!\n\nИтого: ${formatPrice(result.total_cost, currencySymbol)}`);
       onRefresh();
     } catch (error) {
       console.error("Error stopping session:", error);
@@ -167,7 +163,7 @@ export default function AssetCard({ asset, onRefresh }: AssetCardProps) {
                   <span className="text-sm text-gray-400">Текущая стоимость</span>
                 </div>
                 <span className="text-xl font-bold text-yellow-400">
-                  {formatPrice(currentCost)}
+                  {formatPrice(currentCost, currencySymbol)}
                 </span>
               </div>
             </div>
@@ -227,7 +223,7 @@ export default function AssetCard({ asset, onRefresh }: AssetCardProps) {
               Завершение сессии
             </h2>
             <p className="text-gray-400 text-sm text-center mb-6">
-              {asset.name} • {formatPrice(currentCost)}
+              {asset.name} • {formatPrice(currentCost, currencySymbol)}
             </p>
 
             <div className="space-y-3">

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import { Asset, Category, TenantSettings } from "@/types";
 import { assets, categories as categoriesApi, tenants } from "@/lib/api";
+import { resetCurrencyCache } from "@/lib/currency";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -80,6 +81,7 @@ export default function SettingsPage() {
         default_price: settings.default_price,
       });
       setSettings(updated);
+      resetCurrencyCache(); // сбросить кэш чтобы другие страницы подхватили новую валюту
     } catch (error) {
       console.error("Error saving settings:", error);
       alert("Ошибка сохранения настроек");
@@ -500,7 +502,7 @@ export default function SettingsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Цена за час (сум)</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">Цена за час ({settings?.currency_symbol || "сум"})</label>
                   <input
                     type="number"
                     value={assetForm.hourly_rate}
